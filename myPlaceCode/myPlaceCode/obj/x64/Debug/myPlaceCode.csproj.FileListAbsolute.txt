@@ -1,0 +1,13 @@
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\bin\x64\Debug\myPlaceCode.exe.config
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\bin\x64\Debug\myPlaceCode.exe
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\bin\x64\Debug\myPlaceCode.pdb
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\bin\x64\Debug\gdalconst_csharp.dll
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\bin\x64\Debug\gdal_csharp.dll
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\bin\x64\Debug\ogr_csharp.dll
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\bin\x64\Debug\osr_csharp.dll
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\obj\x64\Debug\myPlaceCode.Form1.resources
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\obj\x64\Debug\myPlaceCode.Properties.Resources.resources
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\obj\x64\Debug\myPlaceCode.csproj.GenerateResource.Cache
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\obj\x64\Debug\myPlaceCode.exe
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\obj\x64\Debug\myPlaceCode.pdb
+D:\GitHub\PlaceCode2\myPlaceCode\myPlaceCode\obj\x64\Debug\myPlaceCode.csprojResolveAssemblyReference.cache

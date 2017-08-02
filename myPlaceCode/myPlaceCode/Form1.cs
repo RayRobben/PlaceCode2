@@ -7,6 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using OSGeo.GDAL;
+using OSGeo.OGR;
+using OSGeo.OSR;
+using System.IO;
 
 namespace myPlaceCode
 {
@@ -15,6 +19,8 @@ namespace myPlaceCode
         // 秒以下的单位值的倒数，将秒以下数值转换为二进制，需要先乘以该值
         // 2048=2^11，对应11位二进制；
         long subsec = 2048;
+        //度（9位），分（6位），秒（6位），秒以下（11位）
+        static int lde = 9, lmin = lde + 6, lsec = lmin+6;
 
         public Form1()
         {
@@ -32,15 +38,16 @@ namespace myPlaceCode
                 return;
             }
 
-            double x = double.Parse(xys[0]), y = double.Parse(xys[1]);
-            string code = trandxy2code(x,y);
+            double x = double.Parse(xys[0]), y = double.Parse(xys[1]),h=8848;
+            string code = trandxy2code(x,y,h);
             lblCodeExp.Text = code;
 
         }
 
         //将坐标转换为时空编码，
         //具体编码方法参照文献：《地球空间参考网格系统建设初探》程承旗
-        private string trandxy2code(double x,double y)
+        //该函数实现的是基于单点坐标生成定位码，高程值用5位0表示
+        private string trandxy2code(double x,double y,double h)
         {
             //编码共32级，64位，每一级纬向和经向编码各占一位，
             //因此，在一个方向上位数分布为，度（9位），分（6位），秒（6位），秒以下（11位）；
@@ -60,6 +67,9 @@ namespace myPlaceCode
             xcd = xbu + xcd;
             ycd = ybu + ycd;
             code = CrossString(xcd,ycd);
+            string sh = Convert.ToString(Math.Round(h));
+            sh=sh.PadLeft(5, '0');
+            code = code + "-" + sh;
             return code;
         }
         //字符串交叉，纬向在前，经向在后，每一位交叉组合
@@ -116,5 +126,260 @@ namespace myPlaceCode
              subs = Convert.ToInt32(Math.Floor((((x - d) * 60 - m) * 60 - s) * subsec));
             return;
         }
+
+        //生成范围码，即，根据坐上角点和右下角点，生成表征范围的编码
+        //编码构成规则：级别（2位）+纬向半跨度码（2位）+经向半跨度码（2位）
+        private void btnGenRangeCode_Click(object sender, EventArgs e)
+        {
+            string[] sXyul = txtUL.Text.Split(',');
+            string[] sXybr = txtBR.Text.Split(',');
+            int nul = sXyul.GetLength(0),nbr=sXybr.GetLength(0);
+            if (nul != 2 || nbr !=2)
+            {
+                MessageBox.Show("输入坐标格式有问题，请顺序输入坐标的xy值，用,连接");
+                return;
+            }
+
+            double xul = double.Parse(sXyul[0]), yul = double.Parse(sXyul[1]);
+            double xbr = double.Parse(sXybr[0]), ybr = double.Parse(sXybr[1]);
+            string code = trandxy2rangecode(xul,yul,xbr,ybr);
+            lblRangeExp.Text = code;
+        }
+
+        //根据左上角点和右下角点坐标，生成范围码
+        private string trandxy2rangecode(double xul, double yul, double xbr, double ybr)
+        {
+            long level = 32;  //当前范围编码级别
+            double dbXdet = xbr - xul;
+            double dbYdet = yul - ybr;
+            if (dbXdet < 0 || dbYdet < 0)
+            {
+                MessageBox.Show("左上角点和右下角点输入有问题，xul < xbr && yul > ybr");
+                return "";
+            }
+
+            //将度小数转换为秒
+            int d=0, m=0, s=0, subs=0;
+            du2dms(dbXdet, ref d, ref m, ref s, ref subs);
+            double dbd = Convert.ToDouble(d), dbm = Convert.ToDouble(m), dbs = Convert.ToDouble(s), dbss = Convert.ToDouble(subs) / subsec;
+            double dbXsec = dbd * 3600 + dbm * 60 + dbs + dbss;
+            double dbXmin = dbd * 60 + dbm + (dbs+dbss)/60;
+            double dbXde = dbd + dbm/60 + (dbs+dbss)/ 3600;
+            du2dms(dbYdet, ref d, ref m, ref s, ref subs);
+            dbd = Convert.ToDouble(d); dbm = Convert.ToDouble(m); dbs = Convert.ToDouble(s); dbss = Convert.ToDouble(subs) / subsec;
+            double dbYsec = dbd * 3600 + dbm * 60 + dbs + dbss;
+            double dbYmin = dbd * 60 + dbm + (dbs + dbss) / 60;
+            double dbYde = dbd + dbm / 60 + (dbs + dbss) / 3600;
+            int nX=0, nY=0,ie=0,i;
+            //从32级开始生成范围码，如果范围码任何一个方向上的半跨度码超过两位数（99），那么需要提升一级，重新开始编码，直至符合条件
+            for (i = 32; i > 0;--i )
+            {
+                if (i>lsec)
+                {
+                    //秒以下级别
+                    ie = i - lsec;
+                    nX = Convert.ToInt32(Math.Ceiling(dbXsec * Math.Pow(2, ie)));
+                    nY = Convert.ToInt32(Math.Ceiling(dbYsec * Math.Pow(2, ie)));
+                    if (nX<100 && nY<100)
+                        break;
+                }
+                else if (i>lmin)
+                {
+                    //秒级
+                    ie = i - lmin;
+                    nX = Convert.ToInt32(Math.Ceiling(dbXsec / Math.Pow(2, ie)));
+                    nY = Convert.ToInt32(Math.Ceiling(dbYsec / Math.Pow(2, ie)));
+                    if (nX < 100 && nY < 100)
+                        break;
+                }
+                else if (i>lde)
+                {
+                    //分级
+                    ie = i - lde;
+                    nX = Convert.ToInt32(Math.Ceiling(dbXmin / Math.Pow(2, ie)));
+                    nY = Convert.ToInt32(Math.Ceiling(dbYmin / Math.Pow(2, ie)));
+                    if (nX < 100 && nY < 100)
+                        break;
+                }
+                else
+                {
+                    //度级
+                    ie = i - lde;
+                    nX = Convert.ToInt32(Math.Ceiling(dbXde / Math.Pow(2, ie)));
+                    nY = Convert.ToInt32(Math.Ceiling(dbXde / Math.Pow(2, ie)));
+                    if (nX < 100 && nY < 100)
+                        break;
+                }
+            }
+
+            string code = "";
+            code = Convert.ToString(i).PadLeft(2, '0') + Convert.ToString(nY).PadLeft(2, '0') + Convert.ToString(nX).PadLeft(2, '0');
+            return code;
+        }
+
+        //生成日期码
+        private string GenDateCode()
+        {
+            string code = DateTime.Now.ToString("yyyyMMdd");
+            string status = "0"; // 标志位，0采集日期，1实体创建日期
+            return code + status;
+        }
+
+        //从shp文件中生成
+        private void btnGenCodeShp_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Multiselect = false;//该值确定是否可以选择多个文件
+            dialog.Title = "请选择shp文件";
+            dialog.Filter = "SHP文件(*.shp)|*.shp";
+            if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return;
+
+            string file = dialog.FileName;
+            InitinalGdal();
+            if (!GetShpLayer(file))
+            {
+                MessageBox.Show("error");
+                return;
+            }
+            DateTime t0 = DateTime.Now;
+            DateTime t1;
+
+            int iIndex = 0;
+            //读取当前图层中对象数量，并便利所有对象，对每个对象进行编码，然后输出成txt
+            int iFeatureCout = Convert.ToInt32(oLayer.GetFeatureCount(0));
+            //创建输出的编码文件
+            int iPosition = file.LastIndexOf("\\");
+            string sTxtName = file.Substring(iPosition + 1, file.Length - iPosition - 4 - 1) + ".txt";
+            FileStream fs = new FileStream("D:\\"+sTxtName, FileMode.Create);
+            string[] sXY;  //每次读取的POI的坐标对，只有一个坐标的X和Y
+            int nul; //上述字符串数组要素数量
+            string codepos, coderange, codedate, code;
+            byte[] data;
+            for (iIndex = 0; iIndex < iFeatureCout;++iIndex )
+            {
+                if (!GetGeometry(iIndex))
+                {
+                    MessageBox.Show("error");
+                    break;
+                }
+
+                sXY = sCoordiantes.Split(' ');
+                nul = sXY.GetLength(0);
+                if (nul<2)
+                    continue;
+                codepos = trandxy2code(double.Parse(sXY[0]), double.Parse(sXY[1]), 0);
+                coderange = trandxy2rangecode(double.Parse(sXY[0]), double.Parse(sXY[1]), double.Parse(sXY[0]), double.Parse(sXY[1]));
+                codedate = GenDateCode();
+                code = codepos + "-" + coderange+"-"+codedate+"\r\n";
+                //获得字节数组
+                data = System.Text.Encoding.Default.GetBytes(code);
+                //开始写入
+                fs.Write(data, 0, data.Length);
+            }
+
+            t1 = DateTime.Now;
+            // 求时间差
+            TimeSpan ts = t1 - t0;
+            string sTmp = String.Format("完成时间：{0:F} \r\n要素数量：{1:D1} \r\n编码耗时（以秒计）：{2} \r\n", t1, iFeatureCout, ts.TotalSeconds);
+            data = System.Text.Encoding.Default.GetBytes(sTmp);
+            fs.Seek(0, SeekOrigin.Begin);
+            fs.Write(data, 0, data.Length);
+            //清空缓冲区、关闭流
+            fs.Flush();
+            fs.Close();
+
+            MessageBox.Show("ok");
+        }
+
+        public OSGeo.OGR.Driver oDerive;
+        private Layer oLayer;
+        public string sCoordiantes; 
+        // 初始化Gdal  
+        public void InitinalGdal()  
+        {
+            oLayer = null;
+            sCoordiantes = null;
+            SharpMap.GdalConfiguration.ConfigureGdal();
+            SharpMap.GdalConfiguration.ConfigureOgr();
+            // 为了支持中文路径  
+            Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");  
+            // 为了使属性表字段支持中文  
+            Gdal.SetConfigOption("SHAPE_ENCODING", "");  
+            Gdal.AllRegister();  
+            Ogr.RegisterAll();  
+              
+            oDerive = Ogr.GetDriverByName("ESRI Shapefile");  
+            if (oDerive == null)  
+            {  
+                MessageBox.Show("文件不能打开，请检查");  
+            }  
+        }
+
+        // 获取SHP文件的层  
+        public bool GetShpLayer(string sfilename)
+        {
+            if (null == sfilename || sfilename.Length <= 3)
+            {
+                oLayer = null;
+                return false;
+            }
+            if (oDerive == null)
+            {
+                MessageBox.Show("文件不能打开，请检查");
+            }
+            DataSource ds = oDerive.Open(sfilename, 1);
+            if (null == ds)
+            {
+                oLayer = null;
+                return false;
+            }
+            int iPosition = sfilename.LastIndexOf("\\");
+            string sTempName = sfilename.Substring(iPosition + 1, sfilename.Length - iPosition - 4 - 1);
+            //oLayer = ds.GetLayerByName(sTempName);
+            int nly=ds.GetLayerCount();
+            if (nly <= 0)
+            {
+                ds.Dispose();
+                return false;
+            }
+            oLayer = ds.GetLayerByIndex(0);
+            if (oLayer == null)
+            {
+                ds.Dispose();
+                return false;
+            }
+            return true;
+        }
+
+        // 获取数据  
+        public bool GetGeometry(int iIndex)
+        {
+            if (null == oLayer)
+            {
+                return false;
+            }
+            
+            Feature oFeature = null;
+            oFeature = oLayer.GetFeature(iIndex);
+            //  Geometry  
+            Geometry oGeometry = oFeature.GetGeometryRef();
+            wkbGeometryType oGeometryType = oGeometry.GetGeometryType();
+            switch (oGeometryType)
+            {
+                case wkbGeometryType.wkbPoint:
+                    oGeometry.ExportToWkt(out sCoordiantes);
+                    sCoordiantes = sCoordiantes.ToUpper().Replace("POINT (", "").Replace(")", "");
+                    break;
+                case wkbGeometryType.wkbLineString:
+                case wkbGeometryType.wkbLinearRing:
+                    oGeometry.ExportToWkt(out sCoordiantes);
+                    sCoordiantes = sCoordiantes.ToUpper().Replace("LINESTRING (", "").Replace(")", "");
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        }  
     }
 }

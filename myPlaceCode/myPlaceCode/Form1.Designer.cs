@@ -28,12 +28,27 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.lblCoor = new System.Windows.Forms.Label();
-            this.txtCoor = new System.Windows.Forms.TextBox();
-            this.lblExp = new System.Windows.Forms.Label();
             this.lblCodeExp = new System.Windows.Forms.Label();
+            this.lblCoor = new System.Windows.Forms.Label();
+            this.lblExp = new System.Windows.Forms.Label();
+            this.txtCoor = new System.Windows.Forms.TextBox();
             this.btnGenCode = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.lblRangeExp = new System.Windows.Forms.Label();
+            this.txtUL = new System.Windows.Forms.TextBox();
+            this.btnGenRangeCode = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.txtBR = new System.Windows.Forms.TextBox();
+            this.btnGenCodeShp = new System.Windows.Forms.Button();
             this.SuspendLayout();
+            // 
+            // lblCodeExp
+            // 
+            this.lblCodeExp.Location = new System.Drawing.Point(95, 84);
+            this.lblCodeExp.Name = "lblCodeExp";
+            this.lblCodeExp.Size = new System.Drawing.Size(248, 51);
+            this.lblCodeExp.TabIndex = 0;
             // 
             // lblCoor
             // 
@@ -44,14 +59,6 @@
             this.lblCoor.TabIndex = 0;
             this.lblCoor.Text = "坐标XY";
             // 
-            // txtCoor
-            // 
-            this.txtCoor.Location = new System.Drawing.Point(97, 46);
-            this.txtCoor.Name = "txtCoor";
-            this.txtCoor.Size = new System.Drawing.Size(84, 21);
-            this.txtCoor.TabIndex = 1;
-            this.txtCoor.Text = "106.1256,28.32657";
-            // 
             // lblExp
             // 
             this.lblExp.AutoSize = true;
@@ -61,31 +68,110 @@
             this.lblExp.TabIndex = 0;
             this.lblExp.Text = "编码输出";
             // 
-            // lblCodeExp
+            // txtCoor
             // 
-            this.lblCodeExp.Location = new System.Drawing.Point(95, 84);
-            this.lblCodeExp.Name = "lblCodeExp";
-            this.lblCodeExp.Size = new System.Drawing.Size(248, 51);
-            this.lblCodeExp.TabIndex = 0;
+            this.txtCoor.Location = new System.Drawing.Point(97, 46);
+            this.txtCoor.Name = "txtCoor";
+            this.txtCoor.Size = new System.Drawing.Size(84, 21);
+            this.txtCoor.TabIndex = 1;
+            this.txtCoor.Text = "106.1256,28.32657";
             // 
             // btnGenCode
             // 
             this.btnGenCode.Location = new System.Drawing.Point(55, 138);
             this.btnGenCode.Name = "btnGenCode";
-            this.btnGenCode.Size = new System.Drawing.Size(80, 30);
+            this.btnGenCode.Size = new System.Drawing.Size(92, 30);
             this.btnGenCode.TabIndex = 2;
-            this.btnGenCode.Text = "生成编码";
+            this.btnGenCode.Text = "生成定位编码";
             this.btnGenCode.UseVisualStyleBackColor = true;
             this.btnGenCode.Click += new System.EventHandler(this.btnGenCode_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(36, 217);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(53, 12);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "左上角XY";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(36, 253);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(53, 12);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "编码输出";
+            // 
+            // lblRangeExp
+            // 
+            this.lblRangeExp.Location = new System.Drawing.Point(95, 253);
+            this.lblRangeExp.Name = "lblRangeExp";
+            this.lblRangeExp.Size = new System.Drawing.Size(248, 51);
+            this.lblRangeExp.TabIndex = 0;
+            // 
+            // txtUL
+            // 
+            this.txtUL.Location = new System.Drawing.Point(97, 215);
+            this.txtUL.Name = "txtUL";
+            this.txtUL.Size = new System.Drawing.Size(84, 21);
+            this.txtUL.TabIndex = 1;
+            this.txtUL.Text = "106.1256,28.32657";
+            // 
+            // btnGenRangeCode
+            // 
+            this.btnGenRangeCode.Location = new System.Drawing.Point(55, 307);
+            this.btnGenRangeCode.Name = "btnGenRangeCode";
+            this.btnGenRangeCode.Size = new System.Drawing.Size(92, 30);
+            this.btnGenRangeCode.TabIndex = 2;
+            this.btnGenRangeCode.Text = "生成范围编码";
+            this.btnGenRangeCode.UseVisualStyleBackColor = true;
+            this.btnGenRangeCode.Click += new System.EventHandler(this.btnGenRangeCode_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(198, 217);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(53, 12);
+            this.label4.TabIndex = 0;
+            this.label4.Text = "右下角XY";
+            // 
+            // txtBR
+            // 
+            this.txtBR.Location = new System.Drawing.Point(259, 215);
+            this.txtBR.Name = "txtBR";
+            this.txtBR.Size = new System.Drawing.Size(84, 21);
+            this.txtBR.TabIndex = 1;
+            this.txtBR.Text = "108.36456,27.6557";
+            // 
+            // btnGenCodeShp
+            // 
+            this.btnGenCodeShp.Location = new System.Drawing.Point(403, 48);
+            this.btnGenCodeShp.Name = "btnGenCodeShp";
+            this.btnGenCodeShp.Size = new System.Drawing.Size(86, 58);
+            this.btnGenCodeShp.TabIndex = 3;
+            this.btnGenCodeShp.Text = "选择shp文件生成编码";
+            this.btnGenCodeShp.UseVisualStyleBackColor = true;
+            this.btnGenCodeShp.Click += new System.EventHandler(this.btnGenCodeShp_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(401, 261);
+            this.ClientSize = new System.Drawing.Size(691, 375);
+            this.Controls.Add(this.btnGenCodeShp);
+            this.Controls.Add(this.btnGenRangeCode);
+            this.Controls.Add(this.txtBR);
+            this.Controls.Add(this.txtUL);
             this.Controls.Add(this.btnGenCode);
+            this.Controls.Add(this.lblRangeExp);
             this.Controls.Add(this.txtCoor);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.lblCodeExp);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lblExp);
             this.Controls.Add(this.lblCoor);
             this.Name = "Form1";
@@ -97,11 +183,19 @@
 
         #endregion
 
-        private System.Windows.Forms.Label lblCoor;
-        private System.Windows.Forms.TextBox txtCoor;
-        private System.Windows.Forms.Label lblExp;
         private System.Windows.Forms.Label lblCodeExp;
+        private System.Windows.Forms.Label lblCoor;
+        private System.Windows.Forms.Label lblExp;
+        private System.Windows.Forms.TextBox txtCoor;
         private System.Windows.Forms.Button btnGenCode;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lblRangeExp;
+        private System.Windows.Forms.TextBox txtUL;
+        private System.Windows.Forms.Button btnGenRangeCode;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox txtBR;
+        private System.Windows.Forms.Button btnGenCodeShp;
     }
 }
 
